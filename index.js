@@ -1,7 +1,12 @@
-const { json } = require('express');
+// const { json } = require('express');
 const express = require('express');
 //JSON data Import
-const { users } = require("./data/users.json");
+// const { users } = require("./data/users.json");
+
+//importing routes
+// there is no need to write js extension
+const userRouter = require("./routes/users");
+const booksRouter = require("./routes/books");
 
 const app = express();
 const PORT = 8081;
@@ -12,6 +17,10 @@ app.get('/', (req, res) => {
         message: "Server is up and running",
     });
 });
+
+app.use('/users',userRouter);
+app.use('/books',booksRouter);
+
 /**
  * Route:/users
  * Method:GET
@@ -89,9 +98,9 @@ app.post("/users", (req, res) => {
  * Access:Public
  * Parameters:id
  */
-app.put("/users/:id" , (req,res) =>{
-    const {id} =req.params;
-    const{data}=req.body;
+app.put("/users/:id", (req, res) => {
+    const { id } = req.params;
+    const { data } = req.body;
     const user = users.find((each) => each.id === id);
 
     if (!user) {
@@ -101,19 +110,45 @@ app.put("/users/:id" , (req,res) =>{
         });
     }
 
-    const updateUser=users.map((each) =>{
-if(each.id===id){
-    return{
-          ...each,
-          ...data,
-    };
-}
-return each;
+    const updateUser = users.map((each) => {
+        if (each.id === id) {
+            return {
+                ...each,
+                ...data,
+            };
+        }
+        return each;
 
     });
     return res.status(200).json({
-        success:true,
-        data:updateUser,
+        success: true,
+        data: updateUser,
+    });
+});
+
+/**
+ * Route:/users/:id
+ * Method:DELETE
+ * Description:Deleting user by id
+ * Access:Public
+ * Parameters:id
+ */
+app.delete("/users/:id", (req, res) => {
+    const { id } = req.params;
+    const user = users.find((each) => each.id === id);
+
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            message: "User to be deleted not found",
+        });
+    }
+    const index = users.indexOf(user);
+    users.splice(index, 1);
+
+    return res.status(202).json({
+        success: true,
+        data: users
     });
 });
 
